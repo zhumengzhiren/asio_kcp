@@ -10,6 +10,7 @@
 namespace kcp_svr {
 
 class connection_manager;
+class UdpMulticastManager;
 
 
 // The way of using kcp_svr::server is Reactor mode.
@@ -55,6 +56,21 @@ public:
     // you must call stop before the destory of io_service or calling io_service.stop
     void stop();
 
+    // UDP组播功能
+    // 创建一个组播组，返回组ID
+    uint32_t create_multicast_group(const std::string& multicast_addr = "", uint16_t port = 0);
+    
+    // 删除一个组播组
+    bool delete_multicast_group(uint32_t group_id);
+    
+    // 发送消息到组播组（不可靠，无确认）
+    void send_msg_to_multicast_group(uint32_t group_id, std::shared_ptr<std::string> msg);
+    
+    // 发送可靠消息到组播组（带序列号和确认）
+    void send_reliable_msg_to_multicast_group(uint32_t group_id, std::shared_ptr<std::string> msg);
+    
+    // 获取组播组信息，包括地址和端口
+    std::string get_multicast_group_info(uint32_t group_id);
 
 private:
     /// The io_service used to perform asynchronous operations.
@@ -62,6 +78,9 @@ private:
 
     /// The connection manager which owns all live connections.
     std::shared_ptr<connection_manager> connection_manager_ptr_;
+    
+    /// UDP组播管理器
+    std::shared_ptr<UdpMulticastManager> multicast_manager_ptr_;
 };
 
 } // namespace kcp_svr
